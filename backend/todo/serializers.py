@@ -9,12 +9,19 @@ class CategorySerializer(serializers.ModelSerializer):
 
 # Serializer for Task model
 class TaskSerializer(serializers.ModelSerializer):
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    updatedAt = serializers.DateTimeField(source='updated_at', read_only=True)
+    
     class Meta:
         model = Task
-        fields = '__all__'  # include all fields
+        fields = ['id', 'title', 'description', 'category', 'priority', 'deadline', 'status', 'createdAt', 'updatedAt', 'priority_score']
 
 # Serializer for ContextEntry model
 class ContextEntrySerializer(serializers.ModelSerializer):
+    sourceType = serializers.CharField(source='source_type')
+    processedInsights = serializers.CharField(source='processed_insights', required=False)
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    
     class Meta:
         model = ContextEntry
-        fields = '__all__'  # include all fields 
+        fields = ['id', 'content', 'sourceType', 'processedInsights', 'createdAt'] 

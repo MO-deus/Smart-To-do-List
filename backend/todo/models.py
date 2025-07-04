@@ -1,7 +1,8 @@
 from django.db import models
-
+import uuid
 # This model is for categories or tags for tasks
 class Category(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=100, unique=True)  # name of the category
     usage_frequency = models.IntegerField(default=0)      # how many times this category is used
 
@@ -10,6 +11,7 @@ class Category(models.Model):
 
 # This model is for tasks in the todo list
 class Task(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     PRIORITY_CHOICES = [
         (1, 'High'),
         (2, 'Medium'),
@@ -35,6 +37,7 @@ class Task(models.Model):
 
 # This model is for storing context entries like messages, emails, notes
 class ContextEntry(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     SOURCE_CHOICES = [
         ('WhatsApp', 'WhatsApp'),
         ('Email', 'Email'),
