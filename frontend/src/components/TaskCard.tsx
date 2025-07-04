@@ -5,7 +5,7 @@ interface TaskCardProps {
   title?: string;
   description?: string;
   priority?: number;
-  category?: string;
+  categoryName?: string;
   status?: string;
   onEdit?: () => void;
 }
@@ -14,7 +14,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   title = "Sample Task Title",
   description = "This is a sample task description.",
   priority = 2,
-  category = "Work",
+  categoryName = "Work",
   status = "Pending",
   onEdit,
 }) => {
@@ -32,7 +32,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
           </div>
         </div>
         <div className="flex justify-end mt-2">
-          <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">{category}</span>
+          <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200">{categoryName}</span>
         </div>
       </div>
       {onEdit && (

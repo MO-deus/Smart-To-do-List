@@ -1,11 +1,12 @@
 "use client";
+import { useEffect, useState } from "react";
 import TaskCard from "@/components/TaskCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import QuickAddTaskModal from "@/components/QuickAddTaskModal";
 import EditTaskDrawer from "@/components/EditTaskDrawer";
-import { mockTasks } from "@/mock";
-import { useState } from "react";
-import { Task } from "@/types";
+import { fetchTasks, fetchCategories } from "@/services/api";
+import { Task, Category } from "@/types";
+
 
 const statusOptions = ["All", "Pending", "In Progress", "Completed"];
 const priorityOptions = ["All", "High", "Medium", "Low"];
@@ -23,8 +24,20 @@ export default function DashboardPage() {
   const [priority, setPriority] = useState("All");
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [tasks, setTasks] = useState(mockTasks);
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [loading, setLoading] = useState(true);
   const [editTask, setEditTask] = useState<Task | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    fetchTasks()
+      .then(data => setTasks(data))
+      .catch(() => setTasks([]))
+      .finally(() => setLoading(false));
+    fetchCategories()
+      .then(data => setCategories(data))
+      .catch(() => setCategories([]));
+  }, []);
 
   const filteredTasks = tasks.filter((task) => {
     const matchesCategory = category === "All" || task.category === category;
@@ -110,7 +123,7 @@ export default function DashboardPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-          </div>
+        </div>
         </section>
         <section>
           <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Your Tasks</h2>
@@ -124,7 +137,7 @@ export default function DashboardPage() {
                   title={task.title}
                   description={task.description}
                   priority={task.priority}
-                  category={task.category}
+                  categoryName={categories.find(cat => cat.id === task.category)?.name || "Unknown"}
                   status={task.status}
                   onEdit={() => setEditTask(task)}
                 />
@@ -143,7 +156,7 @@ export default function DashboardPage() {
           task={editTask}
           onSave={handleSaveTask}
         />
-      </div>
+    </div>
     </main>
   );
 }

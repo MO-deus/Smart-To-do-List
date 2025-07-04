@@ -1,13 +1,22 @@
 "use client";
-import { mockContextEntries } from "@/mock";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { fetchContextEntries } from "@/services/api";
+import { ContextEntry } from "@/types";
 
 const sourceTypes = ["WhatsApp", "Email", "Note"];
 
 export default function ContextPage() {
-  const [entries, setEntries] = useState(mockContextEntries);
+  const [entries, setEntries] = useState<ContextEntry[]>([]);
+  const [loading, setLoading] = useState(true);
   const [content, setContent] = useState("");
   const [sourceType, setSourceType] = useState(sourceTypes[0]);
+
+  useEffect(() => {
+    fetchContextEntries()
+      .then(data => setEntries(data))
+      .catch(() => setEntries([]))
+      .finally(() => setLoading(false));
+  }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
