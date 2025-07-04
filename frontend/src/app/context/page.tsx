@@ -23,7 +23,7 @@ export default function ContextPage() {
     if (!content.trim()) return;
     setEntries([
       {
-        id: (entries.length + 1).toString(),
+        id: crypto.randomUUID(),
         content,
         sourceType: sourceType as "WhatsApp" | "Email" | "Note",
         createdAt: new Date().toISOString(),

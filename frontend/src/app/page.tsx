@@ -19,7 +19,7 @@ function getPriorityNumber(label: string) {
 }
 
 export default function DashboardPage() {
-  const [category, setCategory] = useState("All");
+  const [category, setCategory] = useState<string | "All">("All");
   const [status, setStatus] = useState("All");
   const [priority, setPriority] = useState("All");
   const [search, setSearch] = useState("");
@@ -53,21 +53,8 @@ export default function DashboardPage() {
     );
   });
 
-  function handleAddTask(newTask: { title: string; description: string; category: string; priority: number }) {
-    setTasks([
-      {
-        id: (tasks.length + 1).toString(),
-        title: newTask.title,
-        description: newTask.description,
-        category: newTask.category,
-        priority: newTask.priority,
-        deadline: new Date().toISOString(),
-        status: "Pending",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      },
-      ...tasks,
-    ]);
+  function handleAddTask(newTask: Task) {
+    setTasks([newTask, ...tasks]);
   }
 
   function handleSaveTask(updatedTask: Task) {
@@ -123,7 +110,7 @@ export default function DashboardPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-        </div>
+          </div>
         </section>
         <section>
           <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Your Tasks</h2>
@@ -156,7 +143,7 @@ export default function DashboardPage() {
           task={editTask}
           onSave={handleSaveTask}
         />
-    </div>
+      </div>
     </main>
   );
 }
