@@ -114,8 +114,8 @@ class DeadlineSuggester:
             if complexity_analysis and 'estimated_hours' in complexity_analysis:
                 base_hours = complexity_analysis['estimated_hours']
             else:
-                # Fallback estimation based on task characteristics
-                base_hours = self.estimate_hours_from_task(task)
+                # Default to 3 hours if no AI analysis available
+                base_hours = 3.0
             
             # Adjust for complexity factors
             complexity_score = complexity_analysis.get('complexity_score', 5)
@@ -145,27 +145,7 @@ class DeadlineSuggester:
             
         except Exception as e:
             logger.error(f"Time requirement estimation failed: {str(e)}")
-            return {'base_hours': 2, 'total_hours': 2}
-    
-    def estimate_hours_from_task(self, task: Dict[str, Any]) -> float:
-        """
-        Fallback method to estimate hours from task characteristics
-        """
-        title = task.get('title', '').lower()
-        description = task.get('description', '').lower()
-        category = task.get('category', '').lower()
-        
-        # Simple keyword-based estimation
-        if any(word in title or word in description for word in ['quick', 'simple', 'basic']):
-            return 1.0
-        elif any(word in title or word in description for word in ['review', 'check', 'verify']):
-            return 2.0
-        elif any(word in title or word in description for word in ['create', 'build', 'develop']):
-            return 4.0
-        elif any(word in title or word in description for word in ['complex', 'detailed', 'comprehensive']):
-            return 6.0
-        else:
-            return 3.0  # Default
+            return {}
     
     async def analyze_schedule_availability(self, context: Dict[str, Any], workload: Dict[str, Any]) -> Dict[str, Any]:
         """
@@ -278,7 +258,7 @@ class DeadlineSuggester:
             if available_capacity > 0:
                 working_days_needed = max(1, round(total_hours / available_capacity))
             else:
-                working_days_needed = max(1, round(total_hours / 3))  # Fallback to 3 hours per day
+                working_days_needed = max(1, round(total_hours / 3))  # Default to 3 hours per day
             
             # Add buffer for dependencies
             total_days_needed = working_days_needed + dependency_delay
@@ -321,14 +301,7 @@ class DeadlineSuggester:
             
         except Exception as e:
             logger.error(f"Deadline suggestion generation failed: {str(e)}")
-            # Fallback suggestion
-            fallback_date = datetime.now() + timedelta(days=3)
-            return [{
-                'type': 'fallback',
-                'deadline': fallback_date.isoformat(),
-                'days_from_now': 3,
-                'reasoning': 'Fallback suggestion due to calculation error'
-            }]
+            return []
     
     async def generate_deadline_reasoning(self, task: Dict[str, Any], deadline_suggestions: List[Dict[str, Any]]) -> str:
         """

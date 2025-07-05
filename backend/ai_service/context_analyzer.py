@@ -260,7 +260,7 @@ class ContextAnalyzer:
             
             if 'error' in ai_result:
                 logger.warning(f"AI deadline suggestions failed: {ai_result['error']}")
-                return self._generate_fallback_deadlines(combined_text)
+                return []
             
             logger.info(f"AI deadline result: {ai_result}")
             
@@ -294,11 +294,6 @@ class ContextAnalyzer:
                     logger.warning(f"Invalid date format in AI suggestion: {e}, deadline: {deadline}")
                     continue
             
-            # If no valid deadlines from AI, generate fallback deadlines
-            if not validated_deadlines:
-                logger.info("No valid AI deadlines, generating fallback deadlines")
-                return self._generate_fallback_deadlines(combined_text)
-            
             # Sort by confidence and return top 5
             validated_deadlines.sort(key=lambda x: x['confidence'], reverse=True)
             result = validated_deadlines[:5]
@@ -307,113 +302,7 @@ class ContextAnalyzer:
             
         except Exception as e:
             logger.error(f"Deadline suggestion generation failed: {str(e)}")
-            return self._generate_fallback_deadlines(combined_text)
-    
-    def _generate_fallback_deadlines(self, text_content: str) -> List[Dict]:
-        """
-        Generate fallback deadline suggestions when AI fails or provides invalid dates
-        """
-        from datetime import datetime, timedelta
-        
-        today = datetime.now().date()
-        fallback_deadlines = []
-        
-        # Generate deadlines based on common patterns in the text
-        text_lower = text_content.lower()
-        
-        # Tomorrow
-        if 'tomorrow' in text_lower:
-            tomorrow = today + timedelta(days=1)
-            fallback_deadlines.append({
-                'date': tomorrow.strftime('%Y-%m-%d'),
-                'reason': 'Based on "tomorrow" reference in context',
-                'confidence': 0.9,
-                'urgency_level': 'high'
-            })
-        
-        # This week
-        if 'this week' in text_lower or 'end of week' in text_lower:
-            # Find next Friday
-            days_until_friday = (4 - today.weekday()) % 7
-            if days_until_friday == 0:
-                days_until_friday = 7  # If today is Friday, use next Friday
-            friday = today + timedelta(days=days_until_friday)
-            fallback_deadlines.append({
-                'date': friday.strftime('%Y-%m-%d'),
-                'reason': 'Based on "this week" or "end of week" reference',
-                'confidence': 0.8,
-                'urgency_level': 'medium'
-            })
-        
-        # Next week
-        if 'next week' in text_lower:
-            next_week = today + timedelta(days=7)
-            fallback_deadlines.append({
-                'date': next_week.strftime('%Y-%m-%d'),
-                'reason': 'Based on "next week" reference',
-                'confidence': 0.8,
-                'urgency_level': 'medium'
-            })
-        
-        # 2 weeks
-        if '2 weeks' in text_lower or 'two weeks' in text_lower:
-            two_weeks = today + timedelta(days=14)
-            fallback_deadlines.append({
-                'date': two_weeks.strftime('%Y-%m-%d'),
-                'reason': 'Based on "2 weeks" reference',
-                'confidence': 0.7,
-                'urgency_level': 'low'
-            })
-        
-        # End of month
-        if 'end of month' in text_lower or 'month end' in text_lower:
-            # Get last day of current month
-            if today.month == 12:
-                end_of_month = datetime(today.year + 1, 1, 1) - timedelta(days=1)
-            else:
-                end_of_month = datetime(today.year, today.month + 1, 1) - timedelta(days=1)
-            fallback_deadlines.append({
-                'date': end_of_month.strftime('%Y-%m-%d'),
-                'reason': 'Based on "end of month" reference',
-                'confidence': 0.7,
-                'urgency_level': 'low'
-            })
-        
-        # Add some default suggestions if we don't have enough
-        if len(fallback_deadlines) < 3:
-            # Add tomorrow as default
-            tomorrow = today + timedelta(days=1)
-            if not any(d['date'] == tomorrow.strftime('%Y-%m-%d') for d in fallback_deadlines):
-                fallback_deadlines.append({
-                    'date': tomorrow.strftime('%Y-%m-%d'),
-                    'reason': 'Default immediate deadline',
-                    'confidence': 0.6,
-                    'urgency_level': 'high'
-                })
-            
-            # Add 3 days from now
-            three_days = today + timedelta(days=3)
-            if not any(d['date'] == three_days.strftime('%Y-%m-%d') for d in fallback_deadlines):
-                fallback_deadlines.append({
-                    'date': three_days.strftime('%Y-%m-%d'),
-                    'reason': 'Default short-term deadline',
-                    'confidence': 0.5,
-                    'urgency_level': 'medium'
-                })
-            
-            # Add 1 week from now
-            one_week = today + timedelta(days=7)
-            if not any(d['date'] == one_week.strftime('%Y-%m-%d') for d in fallback_deadlines):
-                fallback_deadlines.append({
-                    'date': one_week.strftime('%Y-%m-%d'),
-                    'reason': 'Default medium-term deadline',
-                    'confidence': 0.4,
-                    'urgency_level': 'low'
-                })
-        
-        # Sort by confidence and return top 5
-        fallback_deadlines.sort(key=lambda x: x['confidence'], reverse=True)
-        return fallback_deadlines[:5]
+            return []
     
     async def create_context_summary(self, processed_context: Dict[str, Any]) -> str:
         """
@@ -434,34 +323,17 @@ class ContextAnalyzer:
             
             if 'error' in ai_result:
                 logger.warning(f"AI context summary failed: {ai_result['error']}")
-                return self._generate_fallback_summary(processed_context)
+                return "AI analysis failed."
             
             summary = ai_result.get('summary', '')
             if summary and summary.strip():
                 return summary.strip()
             else:
-                return self._generate_fallback_summary(processed_context)
+                return "No summary generated."
             
         except Exception as e:
             logger.error(f"Context summary creation failed: {str(e)}")
-            return self._generate_fallback_summary(processed_context)
-    
-    def _generate_fallback_summary(self, processed_context: Dict[str, Any]) -> str:
-        """
-        Generate a basic fallback summary when AI fails
-        """
-        text_content = processed_context['text_content']
-        
-        if not text_content:
-            return "No content to analyze."
-        
-        # Count sources
-        sources = set(item['source'] for item in text_content)
-        
-        # Get a sample of content for context
-        sample_content = text_content[0]['content'][:100] if text_content else ""
-        
-        return f"Analyzed content from {len(sources)} sources. Sample content: {sample_content}..."
+            return "Summary generation failed."
     
     async def generate_category_suggestions(self, processed_context: Dict[str, Any]) -> List[Dict]:
         """
@@ -485,7 +357,7 @@ class ContextAnalyzer:
             
             if 'error' in ai_result:
                 logger.warning(f"AI category suggestions failed: {ai_result['error']}")
-                return self._generate_fallback_categories(combined_text)
+                return []
             
             logger.info(f"AI category result: {ai_result}")
             
@@ -511,11 +383,6 @@ class ContextAnalyzer:
                     logger.warning(f"Invalid category format: {e}, category: {category}")
                     continue
             
-            # If no valid categories from AI, generate fallback categories
-            if not validated_categories:
-                logger.info("No valid AI categories, generating fallback categories")
-                return self._generate_fallback_categories(combined_text)
-            
             # Sort by confidence and return top 5
             validated_categories.sort(key=lambda x: x['confidence'], reverse=True)
             result = validated_categories[:5]
@@ -524,69 +391,4 @@ class ContextAnalyzer:
             
         except Exception as e:
             logger.error(f"Category suggestion generation failed: {str(e)}")
-            return self._generate_fallback_categories(combined_text)
-    
-    def _generate_fallback_categories(self, text_content: str) -> List[Dict]:
-        """
-        Generate fallback category suggestions when AI fails
-        """
-        fallback_categories = []
-        text_lower = text_content.lower()
-        
-        # Work-related categories
-        if any(word in text_lower for word in ['project', 'report', 'proposal', 'document']):
-            fallback_categories.append({
-                'name': 'Work',
-                'reason': 'Based on work-related content',
-                'confidence': 0.8,
-                'relevance': 'high'
-            })
-        
-        if any(word in text_lower for word in ['meeting', 'client', 'presentation']):
-            fallback_categories.append({
-                'name': 'Communication',
-                'reason': 'Based on communication-related content',
-                'confidence': 0.7,
-                'relevance': 'medium'
-            })
-        
-        if any(word in text_lower for word in ['deadline', 'schedule', 'plan']):
-            fallback_categories.append({
-                'name': 'Planning',
-                'reason': 'Based on planning and scheduling content',
-                'confidence': 0.6,
-                'relevance': 'medium'
-            })
-        
-        # Personal categories
-        if any(word in text_lower for word in ['home', 'family', 'personal']):
-            fallback_categories.append({
-                'name': 'Personal',
-                'reason': 'Based on personal content',
-                'confidence': 0.7,
-                'relevance': 'high'
-            })
-        
-        if any(word in text_lower for word in ['health', 'exercise', 'fitness']):
-            fallback_categories.append({
-                'name': 'Health',
-                'reason': 'Based on health-related content',
-                'confidence': 0.8,
-                'relevance': 'high'
-            })
-        
-        # Add default categories if we don't have enough
-        if len(fallback_categories) < 5:
-            default_categories = [
-                {'name': 'General', 'reason': 'Default category', 'confidence': 0.5, 'relevance': 'low'},
-                {'name': 'Tasks', 'reason': 'General task category', 'confidence': 0.4, 'relevance': 'low'},
-                {'name': 'Important', 'reason': 'Important items', 'confidence': 0.3, 'relevance': 'low'}
-            ]
-            
-            for default_cat in default_categories:
-                if len(fallback_categories) < 5 and not any(cat['name'] == default_cat['name'] for cat in fallback_categories):
-                    fallback_categories.append(default_cat)
-        
-        # Sort by confidence and return top 5
-        fallback_categories.sort(key=lambda x: x['confidence'], reverse=True)
-        return fallback_categories[:5] 
+            return [] 

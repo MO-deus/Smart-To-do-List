@@ -119,7 +119,7 @@ class GeminiAIService:
             5. Dependencies between tasks
             
             IMPORTANT REQUIREMENTS:
-            - For each task, provide a clear, specific, and actionable title (max 60 characters)
+            - For each task, provide a clear, specific, and fitting title to the context provided (max 60 characters)
             - Write concise, actionable descriptions (max 200 characters)
             - Avoid generic titles like "Task from Context Analysis"
             - Focus on what needs to be done, not what was analyzed
@@ -224,52 +224,6 @@ class GeminiAIService:
             3. All suggested dates must be in the future (not today or in the past)
             4. Calculate actual dates based on time references in the context
             
-            Please suggest deadlines based on:
-            1. Explicit time references (today, tomorrow, next week, "2weeks", etc.)
-            2. Task urgency and importance
-            3. Task complexity and estimated effort
-            4. Dependencies and constraints
-            5. Realistic timeframes for completion
-            
-            IMPORTANT DATE CALCULATIONS:
-            - If you see "tomorrow", calculate as today + 1 day
-            - If you see "next Friday", calculate the actual Friday date
-            - If you see "2 weeks", calculate as today + 14 days
-            - If you see "next month", calculate as today + 30 days
-            - Always use the current date as your starting point
-            
-            Consider various timeframes:
-            - Immediate: 1-2 days from today
-            - Short-term: 3-7 days from today
-            - Medium-term: 1-2 weeks from today
-            - Long-term: 1-3 months from today
-            - Extended: 3+ months from today
-            
-            Return as JSON:
-            {{
-                "suggested_deadlines": [
-                    {{
-                        "date": "2024-12-20",
-                        "reason": "Based on 'tomorrow' reference in context",
-                        "confidence": 0.9,
-                        "urgency_level": "high"
-                    }},
-                    {{
-                        "date": "2024-12-27",
-                        "reason": "Based on 'next Friday' reference",
-                        "confidence": 0.8,
-                        "urgency_level": "medium"
-                    }},
-                    {{
-                        "date": "2025-01-02",
-                        "reason": "Based on '2 weeks' reference",
-                        "confidence": 0.7,
-                        "urgency_level": "low"
-                    }}
-                ],
-                "context_analysis": "Analysis of temporal context",
-                "recommendations": "General deadline recommendations"
-            }}
             """,
             
             'categorize': f"""
