@@ -118,12 +118,18 @@ class GeminiAIService:
             4. Deadlines or time constraints
             5. Dependencies between tasks
             
+            IMPORTANT REQUIREMENTS:
+            - For each task, provide a clear, specific, and actionable title (max 60 characters)
+            - Write concise, actionable descriptions (max 200 characters)
+            - Avoid generic titles like "Task from Context Analysis"
+            - Focus on what needs to be done, not what was analyzed
+            
             Return as JSON:
             {{
                 "extracted_tasks": [
                     {{
-                        "title": "Task title",
-                        "description": "Detailed description",
+                        "title": "Concise, actionable task title",
+                        "description": "Brief, specific description of what needs to be done",
                         "priority": "high/medium/low",
                         "deadline": "YYYY-MM-DD or null",
                         "category": "suggested_category",
@@ -132,6 +138,137 @@ class GeminiAIService:
                 ],
                 "context_insights": "Key insights about schedule and priorities",
                 "workload_analysis": "Analysis of current workload"
+            }}
+            """,
+            
+            'context_summary': f"""
+            Analyze the following context and create a meaningful, human-readable summary:
+            
+            Context: {text}
+            
+            Please create a summary that:
+            1. Captures the main themes and topics discussed
+            2. Identifies key action items and priorities
+            3. Highlights important deadlines or time constraints
+            4. Provides insights about the overall context
+            5. Is written in natural, conversational language
+            
+            Avoid generic phrases like "Analyzed content from X sources" or "Detected Y potential action items".
+            Instead, focus on the actual content and what it means for the user.
+            
+            Return as JSON:
+            {{
+                "summary": "A meaningful, human-readable summary of the context",
+                "key_themes": ["theme1", "theme2"],
+                "action_items": ["item1", "item2"],
+                "insights": "Key insights about the context"
+            }}
+            """,
+            
+            'priority_analysis': f"""
+            Analyze the following context for priority indicators and urgency levels:
+            
+            Context: {text}
+            
+            Please identify:
+            1. Priority indicators (urgent, important, critical, etc.)
+            2. Urgency levels and time sensitivity
+            3. Priority distribution across different types
+            4. Overall urgency assessment
+            
+            Return as JSON:
+            {{
+                "priority_distribution": {{
+                    "urgent": 2,
+                    "important": 3,
+                    "normal": 1
+                }},
+                "urgency_level": "high/medium/low",
+                "total_indicators": 6,
+                "insights": "Analysis of priority patterns and urgency"
+            }}
+            """,
+            
+            'workload_analysis': f"""
+            Analyze the following context for workload assessment:
+            
+            Context: {text}
+            
+            Please identify:
+            1. Number of action items and tasks
+            2. Workload complexity and distribution
+            3. Temporal patterns and deadlines
+            4. Overall workload assessment
+            
+            Return as JSON:
+            {{
+                "action_item_count": 5,
+                "temporal_distribution": {{
+                    "immediate": 2,
+                    "short_term": 1,
+                    "medium_term": 2
+                }},
+                "workload_level": "high/medium/low",
+                "insights": "Analysis of current workload and task distribution"
+            }}
+            """,
+            
+            'deadline_suggestions': f"""
+            Analyze the following context and suggest appropriate deadlines in ISO format (YYYY-MM-DD):
+            
+            Context: {text}
+            
+            CRITICAL REQUIREMENTS:
+            1. You MUST provide at least 3 deadline suggestions in ISO format (YYYY-MM-DD)
+            2. Use TODAY'S DATE as the reference point for all calculations
+            3. All suggested dates must be in the future (not today or in the past)
+            4. Calculate actual dates based on time references in the context
+            
+            Please suggest deadlines based on:
+            1. Explicit time references (today, tomorrow, next week, "2weeks", etc.)
+            2. Task urgency and importance
+            3. Task complexity and estimated effort
+            4. Dependencies and constraints
+            5. Realistic timeframes for completion
+            
+            IMPORTANT DATE CALCULATIONS:
+            - If you see "tomorrow", calculate as today + 1 day
+            - If you see "next Friday", calculate the actual Friday date
+            - If you see "2 weeks", calculate as today + 14 days
+            - If you see "next month", calculate as today + 30 days
+            - Always use the current date as your starting point
+            
+            Consider various timeframes:
+            - Immediate: 1-2 days from today
+            - Short-term: 3-7 days from today
+            - Medium-term: 1-2 weeks from today
+            - Long-term: 1-3 months from today
+            - Extended: 3+ months from today
+            
+            Return as JSON:
+            {{
+                "suggested_deadlines": [
+                    {{
+                        "date": "2024-12-20",
+                        "reason": "Based on 'tomorrow' reference in context",
+                        "confidence": 0.9,
+                        "urgency_level": "high"
+                    }},
+                    {{
+                        "date": "2024-12-27",
+                        "reason": "Based on 'next Friday' reference",
+                        "confidence": 0.8,
+                        "urgency_level": "medium"
+                    }},
+                    {{
+                        "date": "2025-01-02",
+                        "reason": "Based on '2 weeks' reference",
+                        "confidence": 0.7,
+                        "urgency_level": "low"
+                    }}
+                ],
+                "context_analysis": "Analysis of temporal context",
+                "recommendations": "General deadline recommendations"
             }}
             """,
             
@@ -175,6 +312,71 @@ class GeminiAIService:
                 "actionable_steps": ["step1", "step2"],
                 "context_details": "Relevant context information",
                 "improvements_made": ["improvement1", "improvement2"]
+            }}
+            """,
+            
+            'category_suggestions': f"""
+            Analyze the following context and suggest appropriate categories for task organization:
+            
+            Context: {text}
+            
+            CRITICAL REQUIREMENTS:
+            1. You MUST provide at least 5 category suggestions
+            2. Categories should be relevant to the context content
+            3. Include both specific and general categories
+            4. Consider different aspects of the content (work, personal, health, etc.)
+            5. Categories should be concise (1-3 words) and actionable
+            
+            Please suggest categories based on:
+            1. The main themes and topics in the context
+            2. The type of tasks or activities mentioned
+            3. The domain or field of work
+            4. The urgency and priority levels
+            5. The temporal aspects (deadlines, schedules)
+            
+            Consider various category types:
+            - Work/Professional: Project, Meeting, Report, Client, etc.
+            - Personal: Home, Family, Health, Finance, etc.
+            - Learning: Study, Research, Training, etc.
+            - Creative: Design, Writing, Art, etc.
+            - Administrative: Planning, Organization, etc.
+            
+            Return as JSON:
+            {{
+                "suggested_categories": [
+                    {{
+                        "name": "Project Management",
+                        "reason": "Based on project-related tasks and deadlines",
+                        "confidence": 0.9,
+                        "relevance": "high"
+                    }},
+                    {{
+                        "name": "Client Relations",
+                        "reason": "Based on client meeting and communication needs",
+                        "confidence": 0.8,
+                        "relevance": "medium"
+                    }},
+                    {{
+                        "name": "Documentation",
+                        "reason": "Based on report and proposal requirements",
+                        "confidence": 0.7,
+                        "relevance": "medium"
+                    }},
+                    {{
+                        "name": "Planning",
+                        "reason": "Based on scheduling and deadline management",
+                        "confidence": 0.6,
+                        "relevance": "low"
+                    }},
+                    {{
+                        "name": "Communication",
+                        "reason": "Based on meeting and presentation needs",
+                        "confidence": 0.5,
+                        "relevance": "low"
+                    }}
+                ],
+                "context_analysis": "Analysis of context themes and category relevance",
+                "recommendations": "General category organization recommendations"
             }}
             """
         }

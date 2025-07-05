@@ -33,7 +33,7 @@ except Exception as e:
 @permission_classes([AllowAny])
 def ai_process_task(request):
     """
-    Process a task through the AI pipeline
+    Process a task through the AI pipeline  
     """
     if not AI_SERVICES_AVAILABLE or ai_pipeline is None:
         return Response({
