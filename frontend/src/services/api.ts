@@ -61,3 +61,24 @@ export async function updateTask(taskId: string, task: {
   if (!res.ok) throw new Error('Failed to update task');
   return res.json();
 }
+
+// deleting a task
+export async function deleteTask(taskId: string) {
+  const res = await fetch(`http://127.0.0.1:8000/api/tasks/${taskId}/`, {
+    method: 'DELETE',
+  });
+  if (!res.ok) throw new Error('Failed to delete task');
+  
+  // DELETE requests often return empty responses, so we don't try to parse JSON
+  if (res.status === 204 || res.headers.get('content-length') === '0') {
+    return null;
+  }
+  
+  // Only try to parse JSON if there's actually content
+  const text = await res.text();
+  if (text) {
+    return JSON.parse(text);
+  }
+  
+  return null;
+}

@@ -4,7 +4,7 @@ import TaskCard from "@/components/TaskCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import QuickAddTaskModal from "@/components/QuickAddTaskModal";
 import EditTaskDrawer from "@/components/EditTaskDrawer";
-import { fetchTasks, fetchCategories } from "@/services/api";
+import { fetchTasks, fetchCategories, deleteTask } from "@/services/api";
 import { Task, Category } from "@/types";
 
 
@@ -60,6 +60,16 @@ export default function DashboardPage() {
   function handleSaveTask(updatedTask: Task) {
     setTasks((prev) => prev.map((t) => t.id === updatedTask.id ? updatedTask : t));
     setEditTask(null);
+  }
+
+  async function handleDeleteTask(taskId: string) {
+    try {
+      await deleteTask(taskId);
+      setTasks((prev) => prev.filter((t) => t.id !== taskId));
+    } catch (error) {
+      console.error("Failed to delete task:", error);
+      alert("Failed to delete task. Please try again.");
+    }
   }
 
   return (
@@ -121,12 +131,14 @@ export default function DashboardPage() {
               filteredTasks.map((task) => (
                 <TaskCard
                   key={task.id}
+                  id={task.id}
                   title={task.title}
                   description={task.description}
                   priority={task.priority}
                   categoryName={categories.find(cat => cat.id === task.category)?.name || "Unknown"}
                   status={task.status}
                   onEdit={() => setEditTask(task)}
+                  onDelete={handleDeleteTask}
                 />
               ))
             )}
