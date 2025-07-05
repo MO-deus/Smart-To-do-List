@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from "react";
-import { fetchCategories } from "@/services/api";
+import React from "react";
+import { useCategories } from "@/contexts/CategoriesContext";
 
 interface CategoryFilterProps {
   value: string | "All";
@@ -7,11 +7,7 @@ interface CategoryFilterProps {
 }
 
 const CategoryFilter: React.FC<CategoryFilterProps> = ({ value, onChange }) => {
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
-
-  useEffect(() => {
-    fetchCategories().then(data => setCategories(data));
-  }, []);
+  const { categories } = useCategories();
 
   return (
     <div className="flex items-center gap-2">

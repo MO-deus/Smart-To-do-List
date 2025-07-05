@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { createCategory, fetchCategories, createTask } from "@/services/api";
+import { createCategory, createTask } from "@/services/api";
 import CategoryDropdown from "@/components/CategoryDropdown";
+import { useCategories } from "@/contexts/CategoriesContext";
 
 interface QuickAddTaskModalProps {
   open: boolean;
@@ -21,24 +22,20 @@ const QuickAddTaskModal: React.FC<QuickAddTaskModalProps> = ({ open, onClose, on
   const [priority, setPriority] = useState(2);
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const { refreshCategories } = useCategories();
 
-  // Load categories when modal opens
+  // Reset form when modal opens/closes
   useEffect(() => {
-    if (open) {
-      loadCategories();
+    if (!open) {
+      setTitle("");
+      setDescription("");
+      setCategory("");
+      setPriority(2);
+      setShowNewCategory(false);
+      setNewCategoryName("");
     }
   }, [open]);
-
-  const loadCategories = async () => {
-    try {
-      const fetchedCategories = await fetchCategories();
-      setCategories(fetchedCategories);
-    } catch (error) {
-      console.error("Failed to load categories:", error);
-    }
-  };
 
   const handleCreateCategory = async () => {
     if (!newCategoryName.trim()) return;
@@ -46,7 +43,7 @@ const QuickAddTaskModal: React.FC<QuickAddTaskModalProps> = ({ open, onClose, on
     try {
       setIsLoading(true);
       const newCat = await createCategory(newCategoryName.trim());
-      await loadCategories(); // Reload categories
+      await refreshCategories(); // Refresh the categories list
       setCategory(newCat.id);
       setShowNewCategory(false);
       setNewCategoryName("");

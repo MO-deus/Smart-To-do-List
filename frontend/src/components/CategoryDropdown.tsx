@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import { fetchCategories } from "@/services/api";
+import React, { useState, useRef } from "react";
+import { useCategories } from "@/contexts/CategoriesContext";
 
 interface CategoryDropdownProps {
   value: string;
@@ -11,20 +11,17 @@ interface CategoryDropdownProps {
 const MAX_VISIBLE = 5;
 
 const CategoryDropdown: React.FC<CategoryDropdownProps> = ({ value, onChange, onCreateNewCategory, disabled }) => {
-  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const { categories } = useCategories();
   const [open, setOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    fetchCategories().then(data => setCategories(data));
-  }, []);
-
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
+  const handleClickOutside = (event: MouseEvent) => {
+    if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      setOpen(false);
     }
+  };
+
+  React.useEffect(() => {
     if (open) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {

@@ -4,8 +4,9 @@ import TaskCard from "@/components/TaskCard";
 import CategoryFilter from "@/components/CategoryFilter";
 import QuickAddTaskModal from "@/components/QuickAddTaskModal";
 import EditTaskDrawer from "@/components/EditTaskDrawer";
-import { fetchTasks, fetchCategories, deleteTask } from "@/services/api";
-import { Task, Category } from "@/types";
+import { fetchTasks, deleteTask } from "@/services/api";
+import { Task } from "@/types";
+import { useCategories } from "@/contexts/CategoriesContext";
 
 
 const statusOptions = ["All", "Pending", "In Progress", "Completed"];
@@ -27,16 +28,13 @@ export default function DashboardPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [editTask, setEditTask] = useState<Task | null>(null);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const { categories } = useCategories();
 
   useEffect(() => {
     fetchTasks()
       .then(data => setTasks(data))
       .catch(() => setTasks([]))
       .finally(() => setLoading(false));
-    fetchCategories()
-      .then(data => setCategories(data))
-      .catch(() => setCategories([]));
   }, []);
 
   const filteredTasks = tasks.filter((task) => {

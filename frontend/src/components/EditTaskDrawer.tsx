@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Task } from "@/types";
 import { createCategory, updateTask } from "@/services/api";
 import CategoryDropdown from "@/components/CategoryDropdown";
+import { useCategories } from "@/contexts/CategoriesContext";
 
 const priorityOptions = [
   { label: "High", value: 1 },
@@ -22,6 +23,7 @@ const EditTaskDrawer: React.FC<EditTaskDrawerProps> = ({ open, onClose, task, on
   const [showNewCategory, setShowNewCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { refreshCategories } = useCategories();
 
   useEffect(() => {
     setForm(task);
@@ -40,6 +42,7 @@ const EditTaskDrawer: React.FC<EditTaskDrawerProps> = ({ open, onClose, task, on
     try {
       setIsLoading(true);
       const newCat = await createCategory(newCategoryName.trim());
+      await refreshCategories(); // Refresh the categories list
       setForm(prev => prev ? { ...prev, category: newCat.id } : prev);
       setShowNewCategory(false);
       setNewCategoryName("");
