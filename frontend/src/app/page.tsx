@@ -118,7 +118,7 @@ export default function DashboardPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
-          </div>
+        </div>
         </section>
         <section>
           <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-gray-100">Your Tasks</h2>
@@ -137,7 +137,7 @@ export default function DashboardPage() {
                   status={task.status}
                   onEdit={() => setEditTask(task)}
                   onDelete={handleDeleteTask}
-                />
+          />
               ))
             )}
           </div>
@@ -153,7 +153,7 @@ export default function DashboardPage() {
           task={editTask}
           onSave={handleSaveTask}
         />
-      </div>
+    </div>
     </main>
   );
 }

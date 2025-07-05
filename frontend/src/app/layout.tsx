@@ -31,7 +31,7 @@ export default function RootLayout({
       >
         <CategoriesProvider>
           <NavBar />
-          {children}
+        {children}
         </CategoriesProvider>
       </body>
     </html>

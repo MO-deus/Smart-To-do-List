@@ -82,3 +82,64 @@ export async function deleteTask(taskId: string) {
   
   return null;
 }
+
+// AI Service Functions
+export async function aiHealthCheck() {
+  const res = await fetch('http://127.0.0.1:8000/api/ai/health-check/');
+  if (!res.ok) throw new Error('AI health check failed');
+  return res.json();
+}
+
+export async function aiProcessTask(taskData: any, contextData?: any) {
+  const res = await fetch('http://127.0.0.1:8000/api/ai/process-task/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task: taskData, context: contextData }),
+  });
+  if (!res.ok) throw new Error('AI task processing failed');
+  return res.json();
+}
+
+export async function aiSuggestCategory(taskData: any) {
+  const res = await fetch('http://127.0.0.1:8000/api/ai/suggest-category/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task: taskData }),
+  });
+  if (!res.ok) throw new Error('AI category suggestion failed');
+  return res.json();
+}
+
+export async function aiEnhanceDescription(taskData: any, contextData?: any) {
+  const res = await fetch('http://127.0.0.1:8000/api/ai/enhance-description/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ task: taskData, context: contextData }),
+  });
+  if (!res.ok) throw new Error('AI description enhancement failed');
+  return res.json();
+}
+
+export async function aiAnalyzeContext(contextData: any) {
+  const res = await fetch('http://127.0.0.1:8000/api/ai/analyze-context/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ context: contextData }),
+  });
+  if (!res.ok) throw new Error('AI context analysis failed');
+  return res.json();
+}
+
+export async function aiCreateEnhancedTask(taskData: any, contextData?: any, autoCreate: boolean = false) {
+  const res = await fetch('http://127.0.0.1:8000/api/ai/create-enhanced-task/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ 
+      task: taskData, 
+      context: contextData, 
+      auto_create: autoCreate 
+    }),
+  });
+  if (!res.ok) throw new Error('AI enhanced task creation failed');
+  return res.json();
+}
