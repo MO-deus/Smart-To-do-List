@@ -2,6 +2,10 @@
 __pycache__/
 *.py[cod]
 *$py.class
+test_ai_api.py
+test_ai_services.py
+test_env.py
+setup_env.py
 
 # Django stuff:
 *.log
