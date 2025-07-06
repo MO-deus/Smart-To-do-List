@@ -25,6 +25,24 @@ A full-stack web application for intelligent task management with AI-powered fea
 - 📱 **Mobile Responsive**: Works seamlessly on all devices
 - ⚡ **Real-time Updates**: Instant feedback and updates
 
+## 📸 Screenshots
+
+### Dashboard View
+![Dashboard Not Loaded](snapshots/dashboard_not_loaded.png)
+![Dashboard Loaded](snapshots/dashboard_loaded.png)
+![Dashboard Search Bar](snapshots/searchbar.png)
+![Dashboard filters Bar](snapshots/filters.png)
+
+### Task creation and updation Views
+![Create task](snapshots/add_new_task.png)
+![Create task category](snapshots/add_new_task_category_creation.png)
+![Edit task](snapshots/edit_task.png)
+
+### Context Analysis
+![Context Analysis](snapshots/context_analysis_page.png)
+![Context Analysed Page](snapshots/context_analyzed_task.png)
+![AI suggestions](snapshots/AI_suggestions.png)
+
 ## 🏗️ Architecture
 
 ```
@@ -49,94 +67,61 @@ Smart Todo List/
 - **PostgreSQL** (or Supabase account)
 - **Google AI API Key** (Gemini)
 
-## 🛠️ Installation & Setup
+## 🛠️ Quick Setup
 
-### 1. Clone the Repository
+### 1. Clone and Setup Backend
 
 ```bash
 git clone <your-repo-url>
-cd smart-todo-list
-```
+cd smart-todo-list/backend
 
-### 2. Backend Setup
-
-#### Install Python Dependencies
-```bash
-cd backend
+# Create virtual environment
 python -m venv venv
-
-# Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# macOS/Linux:
-source venv/bin/activate
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # macOS/Linux
 
 # Install dependencies
 pip install -r requirements.txt
-```
 
-#### Environment Configuration
-Create a `.env` file in the `backend/` directory:
-
-```bash
-# .env
-SECRET_KEY=your-django-secret-key-here
+# Create .env file
+echo "SECRET_KEY=your-django-secret-key-here
 DEBUG=True
-
-# Database Configuration (PostgreSQL)
 DB_NAME=smart_todo_db
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_HOST=localhost
 DB_PORT=5432
-
-# AI Configuration
 GEMINI_API_KEY=your-gemini-api-key-here
 GEMINI_MODEL=gemini-2.5-flash-lite-preview-06-17
+CORS_ALLOWED_ORIGINS=http://localhost:3000" > .env
 
-# CORS Settings
-CORS_ALLOWED_ORIGINS=http://localhost:3000
-```
-
-#### Database Setup
-```bash
-# Run migrations
+# Setup database
 python manage.py makemigrations
 python manage.py migrate
 
-# Create superuser (optional)
-python manage.py createsuperuser
-```
-
-#### Start Backend Server
-```bash
+# Start backend
 python manage.py runserver
 ```
 
-The backend will be available at: `http://localhost:8000`
+### 2. Setup Frontend
 
-### 3. Frontend Setup
-
-#### Install Node.js Dependencies
 ```bash
-cd frontend
+cd ../frontend
+
+# Install dependencies
 npm install
-```
 
-#### Environment Configuration
-Create a `.env.local` file in the `frontend/` directory:
+# Create .env.local
+echo "NEXT_PUBLIC_API_URL=http://localhost:8000/api" > .env.local
 
-```bash
-# .env.local
-NEXT_PUBLIC_API_URL=http://localhost:8000/api
-```
-
-#### Start Frontend Development Server
-```bash
+# Start frontend
 npm run dev
 ```
 
-The frontend will be available at: `http://localhost:3000`
+### 3. Access Application
+
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:8000/api
 
 ## 📚 API Documentation
 
@@ -162,6 +147,9 @@ http://localhost:8000/api
 - `GET /context/` - Get context entries
 - `POST /context/` - Add context entry
 
+#### Statistics
+- `GET /statistics/` - Get application statistics
+
 ### AI Endpoints
 
 #### AI Health Check
@@ -178,31 +166,12 @@ Response:
     "ai_pipeline": true
   },
   "model_info": {
-    "current_model": "gemini-2.5-flash-lite-preview-06-17",
-    "current_model_info": {
-      "description": "Fast, cost-effective model with high rate limits",
-      "best_for": "Structured analysis, JSON generation, task management"
-    }
+    "current_model": "gemini-2.5-flash-lite-preview-06-17"
   }
 }
 ```
 
-#### Context Analysis
-```bash
-POST /ai/analyze-context/
-```
-Request:
-```json
-{
-  "context": {
-    "content": "Meeting scheduled for Friday. Need to prepare quarterly report.",
-    "source": "email",
-    "timestamp": "2024-01-01T10:00:00Z"
-  }
-}
-```
-
-#### Task Processing
+#### Process Task with AI
 ```bash
 POST /ai/process-task/
 ```
@@ -219,18 +188,71 @@ Request:
 }
 ```
 
-## 🧪 Sample Data
+#### Create Enhanced Task
+```bash
+POST /ai/create-enhanced-task/
+```
+Request:
+```json
+{
+  "task": {
+    "title": "Prepare quarterly report",
+    "description": "Create comprehensive quarterly sales report"
+  },
+  "context": {
+    "content": "Deadline is Friday, client meeting scheduled"
+  },
+  "auto_create": true
+}
+```
 
-### Sample Context Data for Testing
+#### Analyze Context
+```bash
+POST /ai/analyze-context/
+```
+Request:
+```json
+{
+  "context": {
+    "content": "Meeting scheduled for Friday. Need to prepare quarterly report.",
+    "source": "email",
+    "timestamp": "2024-01-01T10:00:00Z"
+  }
+}
+```
 
-#### Email Context
+#### Suggest Category
+```bash
+POST /ai/suggest-category/
+```
+Request:
+```json
+{
+  "task_title": "Prepare quarterly report",
+  "task_description": "Create comprehensive quarterly sales report"
+}
+```
+
+#### Enhance Description
+```bash
+POST /ai/enhance-description/
+```
+Request:
+```json
+{
+  "task_title": "Prepare quarterly report",
+  "current_description": "Create quarterly report"
+}
+```
+
+## 🧪 Sample Tasks and AI Suggestions
+
+### Sample Context Input
 ```
 Subject: Client Meeting Preparation
 From: manager@company.com
-Date: 2024-01-01
 
 Hi team,
-
 We have a client meeting scheduled for Friday at 2 PM. Please prepare the quarterly sales report and have the new product demo ready. The client is particularly interested in our Q4 performance and upcoming features.
 
 Also, don't forget to update the project documentation by end of this week.
@@ -239,104 +261,62 @@ Best regards,
 Manager
 ```
 
-#### WhatsApp Messages
-```
-[10:30 AM] Team Lead: Hey team, just got an email from the client. They want to move the project deadline to this Friday instead of next week.
-
-[10:35 AM] Developer: That's tight! We need to finish the backend API integration and update documentation.
-
-[10:40 AM] Designer: I'll prioritize the UI mockups for the new features.
-```
-
-#### Meeting Notes
-```
-Project Review Meeting - 2024-01-01
-
-Action Items:
-1. Complete backend API integration by Wednesday
-2. Update project documentation by Friday
-3. Prepare client presentation for Friday meeting
-4. Test new features before demo
-
-Deadlines:
-- API Integration: Wednesday
-- Documentation: Friday
-- Client Meeting: Friday 2 PM
-```
-
-### Sample Tasks Generated by AI
-
+### AI-Generated Tasks
 ```json
 {
   "extracted_tasks": [
     {
       "title": "Prepare Quarterly Sales Report",
-      "description": "Create comprehensive report for client meeting on Friday",
+      "description": "Create comprehensive quarterly sales report for client meeting on Friday. Include Q4 performance metrics, revenue analysis, and growth projections. Focus on key performance indicators and market trends.",
       "priority": "high",
       "deadline": "2024-01-05",
       "category": "Reports",
       "confidence": 0.95
     },
     {
-      "title": "Update Project Documentation",
-      "description": "Complete documentation updates by end of week",
-      "priority": "medium",
-      "deadline": "2024-01-05",
-      "category": "Documentation",
-      "confidence": 0.88
-    },
-    {
       "title": "Prepare Product Demo",
-      "description": "Set up and test new product features for client demo",
+      "description": "Set up and test new product features for client demo. Ensure all features are working properly, prepare presentation slides, and rehearse the demo flow. Include upcoming features showcase.",
       "priority": "high",
       "deadline": "2024-01-05",
       "category": "Presentations",
       "confidence": 0.92
+    },
+    {
+      "title": "Update Project Documentation",
+      "description": "Complete documentation updates by end of week. Review and update technical specifications, user guides, and API documentation. Ensure all recent changes are properly documented.",
+      "priority": "medium",
+      "deadline": "2024-01-05",
+      "category": "Documentation",
+      "confidence": 0.88
     }
   ]
 }
 ```
 
+### AI Enhancement Examples
+
 ## 🎯 Usage Examples
 
 ### 1. Creating a Task with AI Enhancement
-
-1. Navigate to the Dashboard
+1. Navigate to Dashboard
 2. Click "Add Task"
 3. Enter basic task information
-4. Use AI suggestions for:
-   - Priority level
-   - Category selection
-   - Deadline recommendations
-   - Description enhancement
+4. Use AI suggestions for priority, category, deadline, and description enhancement
 
 ### 2. Context Analysis
-
-1. Go to the Context page
-2. Paste your context data (emails, messages, notes)
+1. Go to Context page
+2. Paste context data (emails, messages, notes)
 3. Click "Analyze Context"
-4. Review AI-generated:
-   - Extracted tasks
-   - Priority suggestions
-   - Deadline recommendations
-   - Category suggestions
+4. Review AI-generated tasks and suggestions
 
 ### 3. Smart Task Management
-
-1. View tasks on the Dashboard
-2. Use filters to organize by:
-   - Status (Pending, In Progress, Completed)
-   - Priority (High, Medium, Low)
-   - Category
-   - Search terms
+1. View tasks on Dashboard
+2. Use filters to organize by status, priority, category
 3. Edit tasks with AI-powered suggestions
 
-## 🔧 Configuration Options
+## 🔧 Configuration
 
 ### AI Model Selection
-
-You can switch between different AI models by setting the `GEMINI_MODEL` environment variable:
-
 ```bash
 # For highest rate limits (development)
 GEMINI_MODEL=gemini-2.5-flash-lite-preview-06-17
@@ -346,125 +326,54 @@ GEMINI_MODEL=gemini-2.5-flash
 
 # For very high rate limits
 GEMINI_MODEL=gemma-3-2b
-
-# For complex analysis
-GEMINI_MODEL=gemma-3-9b
 ```
 
-See [AI Model Configuration Guide](backend/AI_MODEL_CONFIGURATION.md) for detailed information.
-
 ### Database Configuration
-
 The application supports PostgreSQL. For production, consider using Supabase:
-
 1. Create a Supabase project
 2. Get your database credentials
 3. Update the `.env` file with Supabase connection details
 
 ## 🚀 Deployment
 
-### Backend Deployment
-
-#### Using Railway
-1. Connect your GitHub repository to Railway
-2. Set environment variables in Railway dashboard
-3. Deploy automatically on push
-
-#### Using Heroku
+### Backend (Railway/Heroku)
 ```bash
-# Install Heroku CLI
-heroku create your-app-name
-heroku config:set SECRET_KEY=your-secret-key
-heroku config:set GEMINI_API_KEY=your-api-key
+# Set environment variables
+SECRET_KEY=your-secret-key
+GEMINI_API_KEY=your-api-key
+DATABASE_URL=your-database-url
+
+# Deploy
 git push heroku main
 ```
 
-### Frontend Deployment
-
-#### Using Vercel
-1. Connect your GitHub repository to Vercel
+### Frontend (Vercel/Netlify)
+1. Connect your GitHub repository
 2. Set environment variables
 3. Deploy automatically
-
-#### Using Netlify
-1. Connect your repository to Netlify
-2. Set build command: `npm run build`
-3. Set publish directory: `out`
-
-## 🧪 Testing
-
-### Backend Tests
-```bash
-cd backend
-python manage.py test
-```
-
-### Frontend Tests
-```bash
-cd frontend
-npm test
-```
-
-### AI Service Tests
-```bash
-cd backend
-python -c "
-import asyncio
-from ai_service import GeminiAIService
-from services import AIServiceFactory
-
-async def test_ai():
-    factory = AIServiceFactory()
-    print('AI Services Available:', factory.services_available)
-    print('Model Info:', factory.get_model_info())
-
-asyncio.run(test_ai())
-"
-```
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
-
-#### AI Services Not Available
-1. Check `GEMINI_API_KEY` is set correctly
-2. Verify API key has sufficient quota
-3. Check network connectivity
-
-#### Database Connection Issues
-1. Verify PostgreSQL is running
-2. Check database credentials in `.env`
-3. Ensure database exists
-
-#### Frontend API Errors
-1. Verify backend is running on port 8000
-2. Check `NEXT_PUBLIC_API_URL` in frontend `.env.local`
-3. Ensure CORS is configured correctly
+- **AI Services Not Available**: Check `GEMINI_API_KEY` configuration
+- **Database Connection**: Verify PostgreSQL is running and credentials are correct
+- **Frontend API Errors**: Ensure backend is running on port 8000 and CORS is configured
 
 ### Rate Limit Issues
 If you encounter rate limit errors:
 1. Switch to `gemini-2.5-flash-lite-preview-06-17` model
-2. Implement request throttling
-3. Check your API quota in Google AI Studio
+2. Check your API quota in Google AI Studio
 
 ## 📝 Contributing
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
-4. Add tests
-5. Submit a pull request
+4. Submit a pull request
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🤝 Support
-
-For support and questions:
-- Create an issue in the repository
-- Check the documentation
-- Review the troubleshooting section
+This project is licensed under the MIT License.
 
 ---
 
