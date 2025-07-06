@@ -6,7 +6,8 @@ test_ai_api.py
 test_ai_services.py
 test_env.py
 setup_env.py
-
+BACKEND_RESTRUCTURING_README.md
+SIMPLIFIED_STRUCTURE_README.md
 # Django stuff:
 *.log
 *.pot

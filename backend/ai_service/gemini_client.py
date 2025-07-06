@@ -1,6 +1,7 @@
 import os
 import json
 import logging
+from datetime import datetime, timedelta
 from typing import Dict, Any, Optional
 from pathlib import Path
 from dotenv import load_dotenv
@@ -20,13 +21,36 @@ class GeminiAIService:
     Handles authentication, API calls, and response processing
     """
     
-    def __init__(self):
+    def __init__(self, model_name: Optional[str] = None):
         self.api_key = os.getenv('GEMINI_API_KEY')
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY environment variable is required")
         
         self.client = genai.Client(api_key=self.api_key)
-        self.model = "gemini-2.5-flash"
+        
+        # Allow model selection via environment variable or parameter
+        self.model = model_name or os.getenv('GEMINI_MODEL', "gemini-2.5-flash-lite-preview-06-17")
+        
+        # Available models with their characteristics
+        self.available_models = {
+            "gemini-2.5-flash-lite-preview-06-17": {
+                "description": "Fast, cost-effective model with high rate limits",
+                "best_for": "Structured analysis, JSON generation, task management"
+            },
+            "gemini-2.5-flash": {
+                "description": "Standard flash model with good performance",
+                "best_for": "General purpose, balanced performance"
+            },
+            "gemma-3-2b": {
+                "description": "Lightweight model with very high rate limits",
+                "best_for": "Simple tasks, high volume processing"
+            },
+            "gemma-3-9b": {
+                "description": "Larger model with better reasoning",
+                "best_for": "Complex analysis, detailed responses"
+            }
+        }
+        
         self.max_retries = 3
         
     async def generate_content(self, prompt: str, temperature: float = 0.7) -> str:
@@ -111,33 +135,45 @@ class GeminiAIService:
             
             Text: {text}
             
-            Please identify and extract:
-            1. Explicit tasks mentioned
-            2. Implicit tasks that can be inferred
-            3. Priority indicators (urgent, important, etc.)
-            4. Deadlines or time constraints
-            5. Dependencies between tasks
+            CRITICAL TITLE REQUIREMENTS:
+            - Start with STRONG ACTION VERBS: Implement, Build, Create, Design, Develop, Integrate, Configure, Deploy, Test, Document
+            - Include SPECIFIC TECHNOLOGY or DOMAIN: AI, API, Database, UI, Backend, Frontend, Testing, Documentation
+            - Add CONTEXT or PURPOSE: "for Task Management", "with User Authentication", "for Data Analysis"
+            - MAX 60 characters total
+            - NEVER start with "We need to", "Complete", "Finish", "Do", "Work on"
             
-            IMPORTANT REQUIREMENTS:
-            - For each task, provide a clear, specific, and fitting title to the context provided (max 60 characters)
-            - Write concise, actionable descriptions (max 200 characters)
-            - Avoid generic titles like "Task from Context Analysis"
-            - Focus on what needs to be done, not what was analyzed
+            TITLE EXAMPLES:
+            ✅ "Implement AI Context Analysis for Task Generation"
+            ✅ "Build REST API for User Authentication"
+            ✅ "Create Database Schema for Task Management"
+            ✅ "Design Responsive UI for Mobile Users"
+            ✅ "Integrate Payment Gateway with Stripe"
+            ❌ "We need to integrate AI" (too vague)
+            ❌ "Complete the integration" (generic)
+            ❌ "Work on the backend" (unclear)
+            
+            DESCRIPTION REQUIREMENTS:
+            - Write DETAILED descriptions (max 400 chars) with TECHNICAL DETAILS
+            - Include SPECIFIC TECHNOLOGIES, FRAMEWORKS, APIs
+            - Mention DELIVERABLES and SUCCESS CRITERIA
+            - Add CONTEXT and CONSTRAINTS
+            
+            Extract: Explicit/implicit tasks, priority indicators, deadlines, dependencies, technical requirements.
             
             Return as JSON:
             {{
                 "extracted_tasks": [
                     {{
-                        "title": "Concise, actionable task title",
-                        "description": "Brief, specific description of what needs to be done",
+                        "title": "Strong verb + Technology + Context (max 60 chars)",
+                        "description": "Detailed description with technical requirements, deliverables, and context",
                         "priority": "high/medium/low",
                         "deadline": "YYYY-MM-DD or null",
                         "category": "suggested_category",
                         "confidence": 0.85
                     }}
                 ],
-                "context_insights": "Key insights about schedule and priorities",
-                "workload_analysis": "Analysis of current workload"
+                "context_insights": "Key insights about schedule, priorities, and technical requirements",
+                "workload_analysis": "Analysis of current workload and complexity"
             }}
             """,
             
@@ -220,10 +256,43 @@ class GeminiAIService:
             
             CRITICAL REQUIREMENTS:
             1. You MUST provide at least 3 deadline suggestions in ISO format (YYYY-MM-DD)
-            2. Use TODAY'S DATE as the reference point for all calculations
-            3. All suggested dates must be in the future (not today or in the past)
+            2. TODAY'S DATE is {datetime.now().strftime('%Y-%m-%d')} - use this as the reference point for all calculations
+            3. All suggested dates must be in the future (after {datetime.now().strftime('%Y-%m-%d')})
             4. Calculate actual dates based on time references in the context
+            5. If no specific time references are found, suggest reasonable deadlines (1 week, 2 weeks, 1 month)
             
+            EXAMPLES (using {datetime.now().strftime('%Y-%m-%d')} as today):
+            - If context mentions "tomorrow" → use "{(datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')}"
+            - If context mentions "next week" → use "{(datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')}"
+            - If context mentions "Friday" → calculate the next Friday
+            - If context mentions "end of month" → use the last day of current month
+            - If no time references → suggest reasonable dates (1 week, 2 weeks, 1 month from today)
+            
+            Return as JSON:
+            {{
+                "suggested_deadlines": [
+                    {{
+                        "date": "{(datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')}",
+                        "reason": "Based on 'next week' mention in the context",
+                        "urgency": "high",
+                        "confidence": 0.85
+                    }},
+                    {{
+                        "date": "{(datetime.now() + timedelta(days=14)).strftime('%Y-%m-%d')}",
+                        "reason": "Allows for buffer time and quality assurance",
+                        "urgency": "medium",
+                        "confidence": 0.75
+                    }},
+                    {{
+                        "date": "{(datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d')}",
+                        "reason": "Conservative estimate for complex task completion",
+                        "urgency": "low",
+                        "confidence": 0.65
+                    }}
+                ],
+                "context_analysis": "Analysis of time references and urgency patterns in the context",
+                "recommendations": "General deadline management recommendations"
+            }}
             """,
             
             'categorize': f"""
@@ -250,22 +319,29 @@ class GeminiAIService:
             """,
             
             'enhance_description': f"""
-            Enhance the following task description with more details and context:
+            Enhance the following task description with comprehensive details:
             
             Task: {text}
             
-            Please enhance by:
-            1. Adding specific actionable steps
-            2. Including relevant context
-            3. Improving clarity and completeness
-            4. Adding helpful details
+            REQUIREMENTS:
+            - Create DETAILED descriptions (max 500 chars) with TECHNICAL REQUIREMENTS
+            - Add STEP-BY-STEP ACTIONABLE STEPS and DELIVERABLES
+            - Include SUCCESS CRITERIA, DEPENDENCIES, and TIMELINE ESTIMATES
+            - Specify QUALITY STANDARDS and TESTING REQUIREMENTS
+            
+            GOOD EXAMPLE:
+            ✅ "Implement AI-powered context analysis using Google Gemini 2.5 Flash API. Create Django REST endpoints for text processing, task extraction, and priority scoring. Include error handling, rate limiting, and fallback mechanisms. Deliver working API with comprehensive documentation and unit tests. Success criteria: API processes context and returns structured task data with 95% accuracy."
             
             Return as JSON:
             {{
-                "enhanced_description": "Enhanced task description",
-                "actionable_steps": ["step1", "step2"],
-                "context_details": "Relevant context information",
-                "improvements_made": ["improvement1", "improvement2"]
+                "enhanced_description": "Comprehensive description with technical specs, actionable steps, deliverables, and success criteria",
+                "actionable_steps": ["Step 1 with details", "Step 2 with requirements", "Step 3 with deliverables"],
+                "technical_requirements": "Technologies, frameworks, and tools needed",
+                "deliverables": "Specific outputs and outcomes expected",
+                "success_criteria": "How to measure completion and quality",
+                "dependencies": "Prerequisites, resources, and constraints",
+                "timeline_estimate": "Realistic time estimate for completion",
+                "improvements_made": ["Added technical details", "Included success criteria", "Specified deliverables"]
             }}
             """,
             
@@ -340,6 +416,26 @@ class GeminiAIService:
         
         prompt = analysis_prompts[analysis_type]
         return await self.generate_structured_response(prompt)
+    
+    def get_model_info(self) -> Dict[str, Any]:
+        """
+        Get information about the current model and available models
+        
+        Returns:
+            Dictionary with model information
+        """
+        current_model_info = self.available_models.get(self.model, {
+            "description": "Unknown model",
+            "best_for": "General purpose"
+        })
+        
+        return {
+            "current_model": self.model,
+            "current_model_info": current_model_info,
+            "available_models": self.available_models,
+            "environment_variable": "GEMINI_MODEL",
+            "default_model": "gemini-2.5-flash-lite-preview-06-17"
+        }
     
     async def health_check(self) -> bool:
         """
