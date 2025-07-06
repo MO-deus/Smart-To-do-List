@@ -15,11 +15,8 @@ google-genai==0.3.2
 # Date and Time Handling
 python-dateutil==2.8.2
 
-# HTTP Requests (for testing)
+# HTTP Requests
 requests==2.31.0
-# Development and Testing
-pytest==7.4.0
-pytest-django==4.5.2
 
 # Code Quality
 black==23.7.0
