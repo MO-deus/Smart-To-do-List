@@ -1,56 +1,52 @@
 /**
- * PriorityIndicator component for displaying and changing task priority.
+ * StatusBadge component for displaying and changing task status.
  */
 
 import React from 'react';
 
-interface PriorityIndicatorProps {
-  priority: number;
+interface StatusBadgeProps {
+  status: string;
   size?: 'sm' | 'md' | 'lg';
   className?: string;
 }
 
-export const PriorityIndicator: React.FC<PriorityIndicatorProps> = ({
-  priority,
+export const StatusBadge: React.FC<StatusBadgeProps> = ({
+  status,
   size = 'md',
   className = '',
 }) => {
-  const getPriorityConfig = (priority: number) => {
-    switch (priority) {
-      case 1: // High
-        return {
-          color: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-700/50',
-          label: 'High',
-          icon: (
-            <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-            </svg>
-          )
-        };
-      case 2: // Medium
+  const getStatusConfig = (status: string) => {
+    switch (status.toLowerCase()) {
+      case 'pending':
         return {
           color: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700/50',
-          label: 'Medium',
           icon: (
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           )
         };
-      case 3: // Low
+      case 'in progress':
+        return {
+          color: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700/50',
+          icon: (
+            <svg className="w-3 h-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+            </svg>
+          )
+        };
+      case 'completed':
         return {
           color: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700/50',
-          label: 'Low',
           icon: (
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M5 12a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v4a2 2 0 01-2 2M5 12a2 2 0 00-2 2v4a2 2 0 002 2h14a2 2 0 002-2v-4a2 2 0 00-2-2m-2-4h.01M17 16h.01" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
             </svg>
           )
         };
       default:
         return {
           color: 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-900/30 dark:text-gray-300 dark:border-gray-700/50',
-          label: 'Unknown',
           icon: (
             <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -71,7 +67,7 @@ export const PriorityIndicator: React.FC<PriorityIndicatorProps> = ({
     }
   };
 
-  const { color, label, icon } = getPriorityConfig(priority);
+  const { color, icon } = getStatusConfig(status);
   const sizeClasses = getSizeClasses(size);
 
   return (
@@ -83,14 +79,14 @@ export const PriorityIndicator: React.FC<PriorityIndicatorProps> = ({
         ${sizeClasses}
         ${className}
       `}
-      title={`Priority: ${label}`}
+      title={`Status: ${status}`}
     >
       <span className="mr-1.5 flex-shrink-0">
         {icon}
       </span>
-      <span>{label}</span>
+      <span className="capitalize">{status}</span>
     </span>
   );
 };
 
-export default PriorityIndicator; 
+export default StatusBadge; 

@@ -58,7 +58,18 @@ const SmartCategorySelector: React.FC<SmartCategorySelectorProps> = ({
       event.stopPropagation();
     }
     
-    onCategoryChange(categoryName);
+    // Check if this category already exists
+    const existingCategory = categories.find(cat => cat.name.toLowerCase() === categoryName.toLowerCase());
+    
+    if (existingCategory) {
+      // Use existing category ID
+      onCategoryChange(existingCategory.id);
+    } else {
+      // For new AI-suggested categories, we'll need to create them
+      // For now, pass the name and let the parent handle creation
+      onCategoryChange(categoryName);
+    }
+    
     setShowSuggestions(false);
   };
 

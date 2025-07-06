@@ -36,7 +36,7 @@ export const CategoriesProvider: React.FC<CategoriesProviderProps> = ({ children
     try {
       setIsLoading(true);
       const data = await fetchCategories();
-      setCategories(data);
+      setCategories(data.data);
     } catch (error) {
       console.error('Failed to fetch categories:', error);
     } finally {

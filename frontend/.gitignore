@@ -39,3 +39,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+#unwanted readme files
+FRONTEND_RESTRUCTURING_README.md
+AI_COMPONENTS_SUMMARY.md

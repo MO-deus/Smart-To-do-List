@@ -42,12 +42,13 @@ const EditTaskDrawer: React.FC<EditTaskDrawerProps> = ({ open, onClose, task, on
     try {
       setIsLoading(true);
       const newCat = await createCategory(newCategoryName.trim());
-      await refreshCategories(); // Refresh the categories list
+      await refreshCategories();
       setForm(prev => prev ? { ...prev, category: newCat.id } : prev);
       setShowNewCategory(false);
       setNewCategoryName("");
     } catch (error) {
       console.error("Failed to create category:", error);
+      alert(`Failed to create category: ${error instanceof Error ? error.message : String(error)}`);
     } finally {
       setIsLoading(false);
     }
@@ -66,7 +67,7 @@ const EditTaskDrawer: React.FC<EditTaskDrawerProps> = ({ open, onClose, task, on
       const updatedTask = await updateTask(form.id, {
         title: form.title,
         description: form.description,
-        category: form.category,
+        category: form.category || '',
         priority: form.priority,
         deadline: form.deadline,
         status: form.status
@@ -83,51 +84,81 @@ const EditTaskDrawer: React.FC<EditTaskDrawerProps> = ({ open, onClose, task, on
 
   return (
     <>
-      {/* Overlay */}
+      {/* Enhanced Overlay */}
       <div
-        className="fixed inset-0 z-40 bg-black bg-opacity-60 transition-opacity"
+        className="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300"
         onClick={onClose}
         aria-label="Close edit drawer"
       />
-      {/* Drawer */}
-      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-50 bg-white dark:bg-gray-900 shadow-lg transform transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"}`}>
-        <div className="p-6 h-full flex flex-col">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Edit Task</h2>
-            <button onClick={onClose} className="text-gray-500 hover:text-gray-900 dark:hover:text-white text-2xl">&times;</button>
+      
+      {/* Enhanced Drawer */}
+      <div className={`fixed top-0 right-0 h-full w-full max-w-md z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md shadow-2xl border-l border-white/20 dark:border-slate-700/50 transform transition-transform duration-300 ease-out ${open ? "translate-x-0" : "translate-x-full"}`}>
+        <div className="h-full flex flex-col">
+          {/* Enhanced Header */}
+          <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-white">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold">Edit Task</h2>
+                <p className="text-blue-100 text-sm mt-1">Update your task details</p>
+              </div>
+              <button 
+                onClick={onClose} 
+                className="text-white/80 hover:text-white transition-colors duration-200 p-2 hover:bg-white/10 rounded-lg"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
           </div>
-          <form onSubmit={handleSubmit} className="space-y-4 flex-1 overflow-y-auto">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Title</label>
+
+          {/* Enhanced Form */}
+          <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+            {/* Title */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Task Title *
+              </label>
               <input
                 name="title"
                 type="text"
-                className="w-full border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-4 py-3 bg-white/80 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 value={form.title}
                 onChange={handleChange}
                 required
                 disabled={isLoading}
+                placeholder="Enter task title..."
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Description</label>
+
+            {/* Description */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Description
+              </label>
               <textarea
                 name="description"
-                className="w-full border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-4 py-3 bg-white/80 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
                 value={form.description}
                 onChange={handleChange}
-                rows={2}
+                rows={3}
                 disabled={isLoading}
+                placeholder="Add task description..."
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Category</label>
+
+            {/* Category */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Category
+              </label>
               <CategoryDropdown
-                value={form.category}
+                value={form.category || ''}
                 onChange={handleCategoryChange}
                 onCreateNewCategory={() => setShowNewCategory(true)}
                 disabled={isLoading}
               />
+              
               {showNewCategory && (
                 <div className="flex gap-2 mt-2">
                   <input
@@ -135,22 +166,22 @@ const EditTaskDrawer: React.FC<EditTaskDrawerProps> = ({ open, onClose, task, on
                     value={newCategoryName}
                     onChange={e => setNewCategoryName(e.target.value)}
                     placeholder="New category name"
-                    className="border px-2 py-1 rounded flex-1"
+                    className="flex-1 px-3 py-2 bg-white/80 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                     required
                     disabled={isLoading}
                   />
                   <button 
                     type="button" 
                     onClick={handleCreateCategory} 
-                    className="bg-blue-600 text-white px-3 py-1 rounded disabled:opacity-50"
-                    disabled={isLoading}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 transition-all duration-200"
+                    disabled={!newCategoryName.trim() || isLoading}
                   >
                     Add
                   </button>
                   <button 
                     type="button" 
                     onClick={() => setShowNewCategory(false)} 
-                    className="px-3 py-1 rounded"
+                    className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-200"
                     disabled={isLoading}
                   >
                     Cancel
@@ -158,49 +189,64 @@ const EditTaskDrawer: React.FC<EditTaskDrawerProps> = ({ open, onClose, task, on
                 </div>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Priority</label>
-              <select
-                name="priority"
-                className="w-full border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                value={form.priority}
-                onChange={handleChange}
-                disabled={isLoading}
-              >
-                {priorityOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>{opt.label}</option>
-                ))}
-              </select>
+
+            {/* Priority and Status Row */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Priority
+                </label>
+                <select
+                  name="priority"
+                  className="w-full px-4 py-2 bg-white/80 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={form.priority}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                >
+                  {priorityOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>{opt.label}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="space-y-2">
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                  Status
+                </label>
+                <select
+                  name="status"
+                  className="w-full px-4 py-2 bg-white/80 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                  value={form.status}
+                  onChange={handleChange}
+                  disabled={isLoading}
+                >
+                  {statusOptions.map((opt) => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Status</label>
-              <select
-                name="status"
-                className="w-full border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-                value={form.status}
-                onChange={handleChange}
-                disabled={isLoading}
-              >
-                {statusOptions.map((opt) => (
-                  <option key={opt} value={opt}>{opt}</option>
-                ))}
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">Deadline</label>
+
+            {/* Deadline */}
+            <div className="space-y-2">
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300">
+                Deadline
+              </label>
               <input
                 name="deadline"
                 type="datetime-local"
-                className="w-full border border-gray-300 dark:border-gray-700 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-4 py-2 bg-white/80 dark:bg-slate-700/80 border border-slate-200 dark:border-slate-600 rounded-xl text-slate-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                 value={form.deadline ? form.deadline.slice(0, 16) : ""}
                 onChange={handleChange}
                 disabled={isLoading}
               />
             </div>
-            <div className="flex justify-end gap-2 mt-4">
+
+            {/* Enhanced Action Buttons */}
+            <div className="flex gap-3 pt-6 border-t border-slate-200 dark:border-slate-700">
               <button 
                 type="button" 
-                className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200" 
+                className="flex-1 px-4 py-3 bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-200 rounded-xl hover:bg-slate-300 dark:hover:bg-slate-600 transition-all duration-200 font-medium" 
                 onClick={onClose}
                 disabled={isLoading}
               >
@@ -208,10 +254,17 @@ const EditTaskDrawer: React.FC<EditTaskDrawerProps> = ({ open, onClose, task, on
               </button>
               <button 
                 type="submit" 
-                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl hover:from-blue-700 hover:to-purple-700 disabled:opacity-50 transition-all duration-200 font-medium shadow-lg hover:shadow-xl"
                 disabled={isLoading}
               >
-                {isLoading ? "Saving..." : "Save Changes"}
+                {isLoading ? (
+                  <div className="flex items-center justify-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    Saving...
+                  </div>
+                ) : (
+                  "Save Changes"
+                )}
               </button>
             </div>
           </form>

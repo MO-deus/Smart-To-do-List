@@ -8,7 +8,7 @@ interface DeadlineSuggestionProps {
     date: string;
     reason: string;
     confidence: number;
-    urgency_level?: string;
+    urgency?: string;
   }>;
   contextData?: string;
   disabled?: boolean;
@@ -19,7 +19,7 @@ interface DeadlineSuggestion {
   value: string;
   description: string;
   confidence?: number;
-  urgency_level?: string;
+  urgency?: string;
   isAI: boolean;
   isPrimary?: boolean;
 }
@@ -32,7 +32,6 @@ const DeadlineSuggestion: React.FC<DeadlineSuggestionProps> = ({
   contextData,
   disabled = false
 }) => {
-  const [showSuggestions, setShowSuggestions] = useState(false);
   const [showAIDropdown, setShowAIDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -41,7 +40,6 @@ const DeadlineSuggestion: React.FC<DeadlineSuggestionProps> = ({
     const handleClickOutside = (event: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setShowAIDropdown(false);
-        setShowSuggestions(false);
       }
     };
 
@@ -64,7 +62,7 @@ const DeadlineSuggestion: React.FC<DeadlineSuggestionProps> = ({
           value: aiSuggestion.date,
           description: aiSuggestion.reason,
           confidence: aiSuggestion.confidence,
-          urgency_level: aiSuggestion.urgency_level || 'medium',
+          urgency: aiSuggestion.urgency || 'medium',
           isAI: true,
           isPrimary: true // Mark AI suggestions as primary
         });
@@ -186,7 +184,6 @@ const DeadlineSuggestion: React.FC<DeadlineSuggestionProps> = ({
     
     onDeadlineChange(value);
     setShowAIDropdown(false);
-    setShowSuggestions(false);
   };
 
   const formatDate = (dateString: string) => {
@@ -278,8 +275,8 @@ const DeadlineSuggestion: React.FC<DeadlineSuggestionProps> = ({
                             <span className="text-sm font-medium text-gray-900 dark:text-white">
                               {suggestion.label}
                             </span>
-                            <span className={`text-xs px-2 py-1 rounded ${getUrgencyColor(suggestion.urgency_level || 'medium')}`}>
-                              {suggestion.urgency_level || 'medium'}
+                            <span className={`text-xs px-2 py-1 rounded ${getUrgencyColor(suggestion.urgency || 'medium')}`}>
+                              {suggestion.urgency || 'medium'}
                             </span>
                             <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded">
                               AI
@@ -322,17 +319,7 @@ const DeadlineSuggestion: React.FC<DeadlineSuggestionProps> = ({
           disabled={disabled}
         />
         
-        <button
-          type="button"
-          onClick={() => setShowSuggestions(!showSuggestions)}
-          disabled={disabled || deadlineSuggestions.length === 0}
-          className="px-3 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 flex items-center gap-1"
-        >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-          </svg>
-          More
-        </button>
+
         
         <button
           type="button"
@@ -344,44 +331,7 @@ const DeadlineSuggestion: React.FC<DeadlineSuggestionProps> = ({
         </button>
       </div>
 
-      {/* Additional Suggestions Dropdown */}
-      {showSuggestions && deadlineSuggestions.length > 0 && (
-        <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg">
-          <div className="p-2">
-            <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 px-2">
-              Additional Deadline Options
-            </h4>
-            <div className="space-y-1 max-h-48 overflow-y-auto">
-              {deadlineSuggestions.filter(s => !s.isPrimary).map((suggestion, index) => (
-                <button
-                  key={index}
-                  onClick={(e) => handleSuggestionSelect(suggestion.value, e)}
-                  className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-900 dark:text-white font-medium">
-                      {suggestion.label}
-                    </span>
-                    {suggestion.isAI && (
-                      <span className="text-xs bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded">
-                        AI
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm text-gray-900 dark:text-white">
-                      {formatDate(suggestion.value)}
-                    </div>
-                    <div className="text-xs text-gray-500 dark:text-gray-400">
-                      {getDaysUntilDeadline(suggestion.value)}
-                    </div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
+
 
       {/* Current Deadline Display */}
       {deadline && (

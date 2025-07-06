@@ -17,13 +17,20 @@ export async function fetchContextEntries() {
 }
 
 export async function createCategory(name: string) {
-  const res = await fetch('http://127.0.0.1:8000/api/categories/create/', {
+  const res = await fetch('http://127.0.0.1:8000/api/categories/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ name }),
   });
-  if (!res.ok) throw new Error('Failed to create category');
-  return res.json();
+  
+  const data = await res.json();
+  
+  if (!res.ok) {
+    throw new Error(`Failed to create category: ${res.status} ${res.statusText} - ${JSON.stringify(data)}`);
+  }
+  
+  // Return the actual category object from the response
+  return data.data;
 }
 
 // creating a new task
@@ -35,13 +42,27 @@ export async function createTask(task: {
   deadline?: string;
   status?: string;
 }) {
+  // Convert category to category_id for backend compatibility
+  const taskData: any = {
+    ...task,
+    category_id: task.category,
+  };
+  delete taskData.category;
+  
   const res = await fetch('http://127.0.0.1:8000/api/tasks/', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(task),
+    body: JSON.stringify(taskData),
   });
-  if (!res.ok) throw new Error('Failed to create task');
-  return res.json();
+  
+  const data = await res.json();
+  
+  if (!res.ok) {
+    throw new Error(`Failed to create task: ${res.status} ${res.statusText} - ${JSON.stringify(data)}`);
+  }
+  
+  // Return the actual task object from the response
+  return data.data;
 }
 
 // updating an existing task
@@ -53,13 +74,23 @@ export async function updateTask(taskId: string, task: {
   deadline?: string;
   status?: string;
 }) {
+  // Convert category to category_id for backend compatibility
+  const taskData: any = {
+    ...task,
+    category_id: task.category,
+  };
+  delete taskData.category;
+  
   const res = await fetch(`http://127.0.0.1:8000/api/tasks/${taskId}/`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(task),
+    body: JSON.stringify(taskData),
   });
   if (!res.ok) throw new Error('Failed to update task');
-  return res.json();
+  
+  const data = await res.json();
+  // Return the actual task object from the response
+  return data.data;
 }
 
 // deleting a task
