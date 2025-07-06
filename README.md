@@ -83,6 +83,10 @@ venv\Scripts\activate  # Windows
 # Install dependencies
 pip install -r requirements.txt
 
+#if there's an issue related to psycopg2-binary compilation/installation
+#inistall PostgreSQL
+https://www.postgresql.org/download/
+
 # Create .env file
 echo "SECRET_KEY=your-django-secret-key-here
 DEBUG=True
@@ -110,9 +114,6 @@ cd ../frontend
 
 # Install dependencies
 npm install
-
-# Create .env.local
-echo "NEXT_PUBLIC_API_URL=http://localhost:8000/api" > .env.local
 
 # Start frontend
 npm run dev

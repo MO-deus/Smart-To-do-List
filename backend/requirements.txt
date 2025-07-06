@@ -3,14 +3,16 @@ Django==4.2.2
 djangorestframework==3.14.0
 django-cors-headers==4.3.1
 
-# Database
-psycopg2-binary==2.9.7
+# Database (SQLite is built-in with Python)
+# Install PostgreSQL on the systems before installation 
+# if there's an issue with installation related to the "psycopg2-binary"
+psycopg2-binary==2.9.10
 
 # Environment and Configuration
 python-dotenv==1.0.0
 
 # AI Integration
-google-genai==0.3.2
+google-genai==1.24.0
 
 # Date and Time Handling
 python-dateutil==2.8.2
